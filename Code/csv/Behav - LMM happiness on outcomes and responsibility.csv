@@ -1,0 +1,22 @@
+Behav - LMM happiness on outcomes and responsibility
+ , Model 1, Model 2
+(Intercept) , -0.58***, -0.38***
+            , (0.06), (0.07)
+subjectWon , 0.96***, 0.76***
+            , (0.05), (0.09)
+partnerWon , 0.43***, 0.05 
+            , (0.05), (0.09)
+subjDecided_1 , -0.17**, -0.38***
+            , (0.05), (0.09)
+subjectWon:partnerWon , , 0.35***
+            , , (0.10)
+subjectWon:subjDecided_1 , , 0.02 
+            , , (0.10)
+partnerWon:subjDecided_1 , , 0.39***
+            , , (0.10)
+R2 (ord) , 0.250, 0.266
+R2 (adj) , 0.248, 0.262
+AIC , 3266, 3247
+BIC , 3297, 3293
+LogLikelihood , -1627, -1614
+N , 1216, 1216

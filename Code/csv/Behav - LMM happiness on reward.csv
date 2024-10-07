@@ -1,0 +1,16 @@
+Behav - LMM happiness on reward
+ , Model 1, Model 2
+(Intercept) , -0.03 , 0.04^
+            , (0.02), (0.02)
+rewardSubj , 0.98***, 1.02***
+            , (0.06), (0.06)
+rewardPart , 0.21***, 0.25***
+            , (0.06), (0.06)
+ineq , , -0.27***
+            , , (0.04)
+R2 (ord) , 0.147, 0.161
+R2 (adj) , 0.146, 0.160
+AIC , 6331, 6293
+BIC , 6360, 6328
+LogLikelihood , -3160, -3140
+N , 2428, 2428

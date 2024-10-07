@@ -1,0 +1,16 @@
+fMRI - LMM happiness on reward
+ , Model 1, Model 2
+(Intercept) , -0.02 , 0.07**
+            , (0.02), (0.02)
+rewardSubj , 1.16***, 1.21***
+            , (0.07), (0.07)
+rewardPart , 0.18**, 0.24***
+            , (0.07), (0.07)
+ineq , , -0.40***
+            , , (0.05)
+R2 (ord) , 0.193, 0.224
+R2 (adj) , 0.192, 0.223
+AIC , 4393, 4326
+BIC , 4420, 4359
+LogLikelihood , -2191, -2157
+N , 1737, 1737

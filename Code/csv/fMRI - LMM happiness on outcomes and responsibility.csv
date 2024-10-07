@@ -1,0 +1,22 @@
+fMRI - LMM happiness on outcomes and responsibility
+ , Model 1, Model 2
+(Intercept) , -0.54***, -0.26**
+            , (0.06), (0.09)
+subjectWon , 1.01***, 0.65***
+            , (0.06), (0.11)
+partnerWon , 0.35***, -0.11 
+            , (0.06), (0.11)
+subjDecided_1 , -0.22***, -0.45***
+            , (0.06), (0.11)
+subjectWon:partnerWon , , 0.58***
+            , , (0.12)
+subjectWon:subjDecided_1 , , 0.12 
+            , , (0.12)
+partnerWon:subjDecided_1 , , 0.31**
+            , , (0.12)
+R2 (ord) , 0.280, 0.304
+R2 (adj) , 0.278, 0.299
+AIC , 2310, 2287
+BIC , 2339, 2330
+LogLikelihood , -1149, -1135
+N , 876, 876
