@@ -12,7 +12,7 @@ baseDir = '/Users/johannesschultz/sciebo/CURRENT WORK/Responsibility/';
 guilt_pattern_Yu = [baseDir 'Code/bin/Yu_guilt_SVM_sxpo_sxpx_EmotionForwardmask.nii'];
 
 % group response
-my_responses = [baseDir 'fMRIresults/outcome/guiltEffectEachPartic.nii']; % 4D image with each subject's guilt response as separate map
+my_responses = [baseDir 'fMRIresults/outcome/guiltEffectEachPartic.nii.zip']; % 4D image with each subject's guilt response as separate map
 
 % If you have our "CanlabCore" repository from Github on your Matlab path, 
 % an easy way to apply the signature pattern to a new dataset is the "apply_mask" 
@@ -26,7 +26,7 @@ for c = 1:length(canlabcode)
 end
 
 %% Load image to test
-subjNumb = [ 101 102 103 104 106 110 120 124 125 126 129 136 155 166 171 173 174 175 44 55 62 63 65 69 70 71 74 77 79 81 83 84 85 90 92 93 94 95 96 98 ]'; % all subjects in the order stored in the 4D image
+subjNumb = [ 324 325 326 327 328 329 330 331 332 333 347 334 335 336 337 338 339 340   301 302 304 305 306 307 308 309 310 311 312 313 314 315 316 317 318 319 320 321 322 323 ]'; % all subjects in the order stored in the 4D image
 my_responses_fmri_data_object = fmri_data(my_responses, [], 'noverbose');  % loads images as fmri_data object
 
 %% Load reference image to compare to
@@ -58,7 +58,7 @@ fprintf('Effect size (AUROC and Cliff''s Delta) of the guilt response: %.2f, %.2
 
 %% Correlate neural guilt activation pattern response to my behavioural guilt effect
 % Load behavioural data, put into table
-behavGuiltEffectFilename = [baseDir 'Behav data/BehavDuringfMRI/fMRI - GuiltOrResponsibilityEffect.csv'];
+behavGuiltEffectFilename = [baseDir 'BehaviouralData/fMRIstudy/fMRI - GuiltOrResponsibilityEffect.csv'];
 Tb = readtable(behavGuiltEffectFilename);
 
 % Now match the subject numbers in the behavioural and fMRI data

@@ -18,9 +18,9 @@ whichJob = 'run'; %'interactive'; % if "interactive", runs through the spm batch
 %% Subject info
 subjPrefix = 'SODEC_FMRI_';
 % for main FFX decisions and comp model, I can take all the following participants:
-subjNumbers = [ 44 55 62 63 65 69 70 71 74 77    79 81 83 84 85    90 92 93 94 95 96 98 101 102 103 104 106 110 120     124 125 126 129 136 155 166 171 173 174 175 ]; % all participants except those without data in OFC (87 and 176), people with only 1 session (121) or aborted Sess 1 (78), too few "risky" choices (87), missing risky outcome other pos social and self neg solo in Sess 1 (177). Still in are 62 (only 1 trial of outcome other neg partner in Sess 1), 65 and 120, missing outcome self neg solo in both sess (65) and Sess 1 (120)
-% for main FFX outcome, I have to remove participant 65 who had no outcome self neg solo in both sessions:
-% subjNumbers = [ 44 55 62 63    69 70 71 74 77    79 81 83 84 85    90 92 93 94 95 96 98 101 102 103 104 106 110 120     124 125 126 129 136 155 166 171 173 174 175 ]; % all participants except those without data in OFC (87 and 176), people with only 1 session (121) or aborted Sess 1 (78), too few "risky" choices (87), missing risky outcome other pos social and self neg solo in Sess 1 (177), and missing outcome self neg solo in both Sess (65). Still in are 62 (only 1 trial of outcome other neg partner in Sess 1), and 120, missing outcome self neg solo in Sess 1
+subjNumbers = [ 301 302 304 305 306 307 308 309 310 311 312 313 314 315 316 317 318 319 320 321 322 323 324 325 326 327 328 329 330 331 332 333 347 334 335 336 337 338 339 340 ];
+% for main FFX outcome, I have to remove participant 306 who had no outcome self neg solo in both sessions:
+subjNumbers = [ 301 302 304 305     307 308 309 310 311 312 313 314 315 316 317 318 319 320 321 322 323 324 325 326 327 328 329 330 331 332 333 347 334 335 336 337 338 339 340 ];
 
 %% PPI information
 if isPPI

@@ -6,7 +6,7 @@
 
 %% Base settings
 baseDir = '/Volumes/LaCie_RAID_A/Documents/exp/SoDec/Responsibility/';
-subj = [ 44 55 62 63 65 69 70 71 74 77    79 81 83 84 85    90 92 93 94 95 96 98 101 102 103 104 106 110 120     124 125 126 129 136 155 166 171 173 174 175 ]; % all participants except those without data in OFC (87 and 176), people with only 1 session (121) or aborted Sess 1 (78), too few "risky" choices (87), missing risky outcome other pos social and self neg solo in Sess 1 (177). Still in are 62 (only 1 trial of outcome other neg partner in Sess 1), 65 and 120, missing outcome self neg solo in both sess (65) and Sess 1 (120)
+subj = [ 301 302 304 305 306 307 308 309 310 311 312 313 314 315 316 317 318 319 320 321 322 323 324 325 326 327 328 329 330 331 332 333 347 334 335 336 337 338 339 340 ];
 
 %% FFX contrasts
 %  1 Decision safe social                             
@@ -30,11 +30,9 @@ subj = [ 44 55 62 63 65 69 70 71 74 77    79 81 83 84 85    90 92 93 94 95 96 98
 % make RFX paired t-tests for the critical guilt contrast
 % Guilt: risky > safe    Reg No: 13 vs 14
 i=1; cons{i,1} = 'Guilt - neg social > neg partner';           cons{i,2} = [13 14];  cons{i,3} = [baseDir 'FFX/main/'];
-i=2; cons{i,1} = 'Old FFXs: Guilt - neg social > neg partner'; cons{i,2} = [16 17];  cons{i,3} = '/Volumes/LaCie_non-RAID/SODEC/FFX_Rutledge_10oct2019_outcomeNegPosPartner/';
 
 % Explicit mask for model
 explicitMask = '/Volumes/LaCie_RAID_A/Documents/exp/SoDec/Responsibility/RFX/FullFact/main/outcome/risky>safe_0p05FWE_clust.nii';
-% explicitMask = '/Users/johannesschultz/sciebo/CURRENT WORK/Responsibility/fMRIresults/meanAnatomy/meanAnatomy_segmentedGrayMatter.nii';
 
 % Thresholding and SVC if desired
 thresh = 0.001;
