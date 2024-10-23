@@ -1,23 +1,19 @@
-% Script to set up and run RFX full factorial design models
+%% SPM12 RFX batch code for Responsibility project. Can run "main" (conventional) and computational models.
 %
-% TO DO: works! But saves as 'RFX/FullFact_decision/decision/SPM.mat'
-%         replicates huge social>solo effect in automated interaction
-%         maybe change the contrasts that get estimated?
-%         get PPI to work after having run the FFXs
-%
+% J Schultz 2019-2024
+
 clear
 baseDir = '/Volumes/LaCie_RAID_A/Documents/exp/SODEC/Responsibility/';
-RFXbaseDir = [baseDir 'RFX/FullFact/']; % Decision and Outcome are in subfolders
 FFXbaseDir = [baseDir 'FFX/'];
+RFXbaseDir = [baseDir 'RFX/FullFact/']; % Decision and Outcome are in subfolders of this
 
 % command flags
 estimate = 1; % if 0, does not estimate the model
-isPPI = 0;
+isPPI = 0; % set to 1 to run connectivity analyses
 whichRFX = 'main/decision';   % main FFX model, decision regressors
 % whichRFX = 'main/outcome';    % main FFX model, outcome regressors
 % whichRFX = 'comp';            % model with computational regressors
 whichJob = 'run'; %'interactive'; % if "interactive", runs through the spm batch system, allows to inspect the batch set up
-% whichJob = 'interactive'; %'interactive'; % if "interactive", runs through the spm batch system, allows to inspect the batch set up
 
 %% Subject info
 subjPrefix = 'SODEC_FMRI_';

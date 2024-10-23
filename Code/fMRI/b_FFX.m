@@ -1,4 +1,4 @@
-%% FFX batch code for Responsibility project. Can run "main" (conventional) and computational models.
+%% SPM12 FFX batch code for Responsibility project. Can run "main" (conventional) and "comp" (computational) models.
 %
 % J Schultz 2019-2024
 
@@ -11,7 +11,6 @@ spm12
 % ----- Determine task(s)
 % tasks = {'checkRealignmentParameters'};
 % tasks = {'checkNtrials'};
-% tasks = {'calculateModelFit'};
 % tasks = {'FFXspecAndEst'};
 % tasks = {'contrastCheck'};
 tasks = {'contrasts'};
@@ -31,11 +30,8 @@ addpath(genpath(codeDir))
 % ---- Mask for model fit calculations
 anatMask = '/Users/johannesschultz/sciebo/NIFTIbrainMasks/Anatomy/StriatumBilat.nii';
 
-%% ------------ Subjects --------------------------------------------------
-% participants{1} = [ 44 55 62 63 65 69 70 71 74 77 78 79 81 83 84 85 87 90 92 93 94 95 96 98 101 102 103 104 106 110 120 121 124 125 126 129 136 155 166 171 173 174 175 176 177 ]; % all participants
-% Subjects to do:
+%% ------------ Participants ----------------------------------------------
 participants{1} = [ 44 55 62 63 65 69 70 71 74 77    79 81 83 84 85    90 92 93 94 95 96 98 101 102 103 104 106 110 120     124 125 126 129 136 155 166 171 173 174 175 ]; % all participants except those without data in OFC (87 and 176), people with only 1 session (121) or aborted Sess 1 (78), too few "risky" choices (87), missing risky outcome other pos social and self neg solo in Sess 1 (177). Still in are 62 (only 1 trial of outcome other neg partner in Sess 1), 65 and 120, missing outcome self neg solo in both sess (65) and Sess 1 (120)
-participants{1} = [ 65 120 ]; % test participant without outcome risky neg n-soc trials
 Ns = sum(cellfun(@length,participants)); % N subjects
 
 %% --------- FFX model options --------------------------------------------
@@ -256,7 +252,7 @@ for tt = 1:length(tasks)
           modelFit(ses,ISI) = mean(img(find(img)));
           
         case 'checkNtrials'
-          % ------------ for each run type: ------------------
+
           for ses = 1:Nses
             clear scanInput sessMultiFile sessMultiregFile
             
@@ -280,7 +276,6 @@ for tt = 1:length(tasks)
           if ~exist( FFXdirName, 'dir' ); mkdir(FFXdirName); fprintf(fid, 'Erstelle Ordner %s/r/n', FFXdirName ); end
           fprintf('FFX dir name: %s\n',FFXdirName)
           
-          % ------------ for each run type: ------------------
           clear matlabbatch sessionData regs
           for ses = 1:Nses
             clear scanInput sessMultiFile sessMultiregFile
@@ -411,7 +406,9 @@ for tt = 1:length(tasks)
           end
           
           % ================== CONTRASTS ===========================
+
         case 'contrastCheck'
+
           % check whether the contrasts are estimable
           FFXdirName = [mainFolderData filesep FFXfolderName{1} filesep personName filesep];
           
@@ -571,6 +568,7 @@ for tt = 1:length(tasks)
         case 'contrasts'
           % rename ps output file
       end
+
       %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
       t2 = clock;
       processDuration = floor(etime( t2,t1));
@@ -587,6 +585,7 @@ for tt = 1:length(tasks)
       disp(errorMsg.stack(end))
       %                 keyboard
     end % try/catch
+
     % post batch cleanup
     switch doWhat
       case 'calculateModelFit'
@@ -620,7 +619,6 @@ for tt = 1:length(tasks)
       set(gca,'XTick',1:size(cons,1)); xlabel_oblique(cons(:,1),40,12,1)
       set(gca,'position',[0.1300    0.3857    0.7750    0.5393])
   end
-  
   
   disp('....----====|||||====----....')
   if ~isempty(crashedList)
