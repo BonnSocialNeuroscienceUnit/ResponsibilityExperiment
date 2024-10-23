@@ -286,12 +286,9 @@ for currentStudy = 1:length(datasets)
   else; error('No data files found')
   end
   
-  %% If Study 2, I can choose to analyse data from all the people with fMRI data (44 subjects), or all the people with good fMRI data (40 subjects)
-  % We scanned 44 people, and excluded 4 that moved too much. I will report 
-  % the behavioural data from 44 people, and the fMRI data from 40 people.
+  %% In Study 2 (fMRI experiment), we scanned 44 people, and excluded 4 that moved too much. I will report the behavioural data from 44 people, and the fMRI data from 40 people.
   if strcmpi(dataset,'fMRI')
-    personsWithFMRIdata = [ 44 55 59 62 63 65 69 70 71 74 77 79 81 83 84 87 90 92 93 94 95 96 98 101 102 103 104 106 110 120 121 124 125 126 129 136 155 166 171 173 174 175 176 177 ];
-    % personsWithGoodfMRIdata = [ 44 55 62 63 65 69 70 71 74 77 79 81 83 84 85 90 92 93 94 95 96 98 101 102 103 104 106 110 120 124 125 126 129 136 155 166 171 173 174 175 ];
+    personsWithFMRIdata = [ 301 302 303 304 305 306 307 308 309 310 311 312 313 314 315 345 317 318 319 320 321 322 323 324 325 326 327 328 329 330 346 331 332 333 347 334 335 336 337 338 339 340 348 349 ];
     subjNumbersOrig = subjNumbers;
     [subjNumbers,idx] = intersect(subjNumbers,personsWithFMRIdata);
     R = R(idx);
