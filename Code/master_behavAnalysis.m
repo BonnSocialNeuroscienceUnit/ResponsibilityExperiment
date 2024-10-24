@@ -133,22 +133,12 @@ end
 % end
 analyseDecisions               = 'Yes'; % general problem: I have few trials and people are not always consistent. See table decTab for a subject's decisions as function of values of risky and safe options
 flag.fitBinnedEVdiffs          = 1;  % the first type of decision analysis I did, abandoned for better alternatives
-flag.fitBinnedSVdiffs          = 1;  % same, but based on subjective value. Only works if I have CARA rhos for each trialtype, so need flag.fitCARA=1 or flag.findCARArhoInSearchSpace=1
-flag.fitIndivBinnedDecisions   = 0; functType = 'logistic'; lowerBounds = [0 0 0 1]; upperBounds = [1 30 .1 1]; % bounds values are: ?, slope (higher is steeper), yoffset, data scaling (^-> determines lapse rate). % functType = 'logistic';
-flag.fitCharnessRabin          = 1;  % do I do this properly?
+flag.fitBinnedSVdiffs          = 1;  % same, but based on subjective value. Only works if I have CARA rhos for each trialtype, so need flag.findCARArhoInSearchSpace=1
 flag.fitProbitFunction         = 1;  % fits the choices fine as function of EVrisky-Vsafe, but (1) is this a valid independent value? 2) I can't directly interpret the estimated parameters
-flag.fitProbitFunction_sepTrialTypes = 0;
-flag.indivProbitFitWithEVdiff  = 0;  % shows fitted probit functions, using EVdiff, separately for each trialtype
-flag.indivProbitFitWithSVdiff  = 0;  % shows fitted probit functions, using SVdiff, for all trialtypes
-flag.fitCARA                   = 0;  % this wants to fit rho and sigma, but I have too few datapoints per trial type (gain, mixed, loss). Results correlate with riskPremiums though, so not terrible.
-flag.fitCARA_bothConds         = 0;  % this wants to fit rho and sigma for both experimental conditions at the same time
 flag.findCARArhoInSearchSpace  = 1;  % this is the best so far: finds the risk aversion parameter that best explains the choices.
 rhoToTest                      = -.1:0.001:.1; % the values of rho to test
 flag.checkRiskAversionConsist  = 1;  % Only works if fitProbitFunctionFlag and findCARArhoInSearchSpaceFlag are both = 1
-showIndivmodelNameFitFigs2     = 0;
 
-flag.replaceMissingDecisionValues = 0; % replaces missing decisions using means across the same conditions (I think? Don't do this!)
-% binEdges = -45:10:45;
 binEdges = -50:20:50;
 
 trialTypeColors = niceColors70s(3);
@@ -286,9 +276,12 @@ for currentStudy = 1:length(datasets)
   else; error('No data files found')
   end
   
-  %% In Study 2 (fMRI experiment), we scanned 44 people, and excluded 4 that moved too much. I will report the behavioural data from 44 people, and the fMRI data from 40 people.
+  %% If Study 2, I can choose to analyse data from all the people with fMRI data (44 subjects), or all the people with good fMRI data (40 subjects)
+  % We scanned 44 people, and excluded 4 that moved too much. I will report 
+  % the behavioural data from 44 people, and the fMRI data from 40 people.
   if strcmpi(dataset,'fMRI')
-    personsWithFMRIdata = [ 301 302 303 304 305 306 307 308 309 310 311 312 313 314 315 345 317 318 319 320 321 322 323 324 325 326 327 328 329 330 346 331 332 333 347 334 335 336 337 338 339 340 348 349 ];
+    personsWithFMRIdata = [ 301 302 304 305 306 307 308 309 310 311 312 313 314 315 316 317 318 319 320 321 322 323 324 325 326 327 328 329 330 331 332 333 347 334 335 336 337 338 339 340 341 342 343 344 345 346 347 348 349]; 
+    % personsWithGoodfMRIdata = [ 301 302 304 305 306 307 308 309 310 311 312 313 314 315 316 317 318 319 320 321 322 323 324 325 326 327 328 329 330 331 332 333 347 334 335 336 337 338 339 340 ];
     subjNumbersOrig = subjNumbers;
     [subjNumbers,idx] = intersect(subjNumbers,personsWithFMRIdata);
     R = R(idx);
@@ -481,11 +474,6 @@ for currentStudy = 1:length(datasets)
             decisionsCounts(i,iii,c) = length(chooseRisky(ee==iii));
           end
           binCenters = (binEdges(1:end-1)+binEdges(2:end))/2;
-          if flag.fitIndivBinnedDecisions
-            dec = decisions(i,:,c); xlev = binCenters(~isnan(dec)); dec = dec(~isnan(dec));
-            [PSE(i,c),JND(i,c),slope(i,c),lambda(i,c),R2(i,c),pval(i,c)] = ...
-              fitPsychFunction_js(xlev,dec,'plotFlag',0,'functType',functType,'lowerBounds',lowerBounds,'upperBounds',upperBounds);
-          end
           
           if showIndivmodelNameFitFigs
             if length(vars)>1; subplot(2,2,v); end
@@ -512,76 +500,26 @@ for currentStudy = 1:length(datasets)
           CARA_rho_searchSpace(i,c) = findCARArhoInSearchSpace(riskyHigh,riskyLow,Vsafe,chooseRisky,rhoToTest,plotFlag);
         end
         
-        if flag.fitCARA
-          % Fit each type of trials one after the other (gain, mixed, loss):
-          for t = 1:length(trialTypes)
-            disp(trialTypes{t})
-            try [rho,sigma,CI95] = fitCARAmodelToRiskyChoices(riskyHigh(trialType_indices{t}),riskyLow(trialType_indices{t}),Vsafe(trialType_indices{t}),chooseRisky(trialType_indices{t}),0);
-            catch; rho = NaN; sigma = NaN; CI95 = NaN(2); end
-            
-            rhos(t) = rho; sigmas(t) = sigma;
-            CI95_rho_lo(t) = CI95(1,1); CI95_rho_hi(t) = CI95(1,2);
-            CI95_sigma_lo(t) = CI95(2,1); CI95_sigma_hi(t) = CI95(2,2);
-          end
-          
-          % now collect rho and sigma, and confidence intervals, across subjects and conditions:
-          CARA_rho(i,:,c) = rhos; % dimensions: gain/mixed/loss, conditions ('Self for both','Partner for both - algorithm','Self only'), participant
-          CARA_rho_CI95_lo(i,:,c) = CI95_rho_lo; % dimensions: gain/mixed/loss, conditions ('Self for both','Partner for both - algorithm','Self only'), participant
-          CARA_rho_CI95_hi(i,:,c) = CI95_rho_hi; % dimensions: gain/mixed/loss, conditions ('Self for both','Partner for both - algorithm','Self only'), participant
-          CARA_sigma_CI95_lo(i,:,c) = CI95_sigma_lo; % dimensions: gain/mixed/loss, conditions ('Self for both','Partner for both - algorithm','Self only'), participant
-          CARA_sigma_CI95_hi(i,:,c) = CI95_sigma_hi; % dimensions: gain/mixed/loss, conditions ('Self for both','Partner for both - algorithm','Self only'), participant
-          CARA_sigma(i,:,c) = sigmas;
-        end % fitCARA
-        
         % ------ 3) Fit probit function to model choices as function of difference in expected values between safe and risky:
         if flag.fitProbitFunction
           xForFit = -80:80; % delta EV (EVrisky - Vsafe) to use for display and calculation of risk premium
           yfit = {};
-          if flag.fitProbitFunction_sepTrialTypes
-            for t = 1:length(trialType_indices) % for each type of trial
-              trialType_indices{t} = sort([idx_gain; idx_loss; idx_mixed]);
-              [B,DEV,STATS_probitFit(i,t,c)] = glmfit(Tdec.EVriskyMinusVsafe(trialType_indices{t}),Tdec.chooseRisky(trialType_indices{t}),'binomial','link','probit');
-              yfit{t} = glmval(B,xForFit, 'probit');
-              % Find 0-crossing point, which is a measure of the risk premium:
-              [~,iii] = min((yfit{t}-.5).^2);
-              riskPremiumProbitFit(i,t,c) = xForFit(iii);
-              %           title(STATS.p)
-            end
-          else % for all types of trial together
-            [B,DEV,STATStemp] = glmfit(Tdec.EVriskyMinusVsafe,Tdec.chooseRisky,'binomial','link','probit');
-            % Deviance test to see if this model fits better than one with just a constant term (see see https://ch.mathworks.com/help/stats/glmfit.html):
-            [~,dev_noconstant] = glmfit(ones(size(Tdec.EVriskyMinusVsafe)),Tdec.chooseRisky,'binomial','link','probit','Constant','off');
-            D = dev_noconstant - DEV; D = dev_noconstant - DEV; % D has a chi-square distribution with degrees of freedom equal to the difference in the number of estimated parameters in the model corresponding to DEV and the number of estimated parameters in the constant model.
-            STATStemp.pModel = 1 - chi2cdf(D,length(B)-1); % Find the p-value for a deviance test.
-            STATS_probitFitAllT(i,c) = STATStemp;
-            yfit{1} = glmval(B,xForFit, 'probit');
-            % Find 0-crossing point, which is a measure of the risk premium:
-            [~,iii] = min((yfit{1}-.5).^2);
-            riskPremiumProbitFit(i,c) = xForFit(iii);
-          end
-          if flag.indivProbitFitWithEVdiff
-            cols = 'brg';
-            figure(i+10); set(gcf,'name',sprintf('Subject %d',subjNumbers(i))); subplot(1,2,ceil(c/2)); hold on
-            plot([0 0],[0 1],'k'); plot([xForFit(1) xForFit(end)],[.5 .5],'k');
-            plot(Tdec.EVriskyMinusVsafe,Tdec.chooseRisky,'o');
-            for t = 1:length(yfit) % for each type of trial assessed
-              plot(xForFit,yfit{t},cols(t)); grid on
-              %           title(STATS.p)
-            end
-            if flag.fitProbitFunction_sepTrialTypes
-              titStr = sprintf('risk prem.: %d %d %d\nCARA rho: %.3f %.3f %.3f',[riskPremiumProbitFit(i,:,c) CARA_rho(i,:,c)]);
-            else
-              titStr = sprintf('risk prem.: %d\nCARA rho: %.3f %.3f %.3f',[riskPremiumProbitFit(i,c) CARA_rho(i,:,c)]);
-            end
-            title(titStr)
-            xlabel(EVdiff_str); ylabel('Prob. risky choice');
-          end
+          [B,DEV,STATStemp] = glmfit(Tdec.EVriskyMinusVsafe,Tdec.chooseRisky,'binomial','link','probit');
+          % Deviance test to see if this model fits better than one with just a constant term (see see https://ch.mathworks.com/help/stats/glmfit.html):
+          [~,dev_noconstant] = glmfit(ones(size(Tdec.EVriskyMinusVsafe)),Tdec.chooseRisky,'binomial','link','probit','Constant','off');
+          D = dev_noconstant - DEV; D = dev_noconstant - DEV; % D has a chi-square distribution with degrees of freedom equal to the difference in the number of estimated parameters in the model corresponding to DEV and the number of estimated parameters in the constant model.
+          STATStemp.pModel = 1 - chi2cdf(D,length(B)-1); % Find the p-value for a deviance test.
+          STATS_probitFitAllT(i,c) = STATStemp;
+          yfit{1} = glmval(B,xForFit, 'probit');
+          % Find 0-crossing point, which is a measure of the risk premium:
+          [~,iii] = min((yfit{1}-.5).^2);
+          riskPremiumProbitFit(i,c) = xForFit(iii);
         end
         drawnow
         
         % ------ 5) Calculate the SV of the risky option for each trial based
         % on CARA_rho, to see if choices are related to that now. Relate SV to happiness?
-        if flag.fitCARA || flag.findCARArhoInSearchSpace
+        if flag.findCARArhoInSearchSpace
           SVrisky = [];
           for t = 1:length(trialTypes)
             idx = Tdec.trialType == t;
@@ -592,22 +530,10 @@ for currentStudy = 1:length(datasets)
           SVdiff = Tdec.SVrisky-Tdec.Vsafe;
           Tdec.SVdiff = SVdiff;
           Tdec_allS{i,c}.SVdiff = SVdiff;
-        end % flag.fitCARA
-        
-        if flag.indivProbitFitWithSVdiff
-          SVdiff_str = {'SV_r_i_s_k_y - SV_s_a_f_e'};
-          [B,DEV,STATS_6(i,c)] = glmfit(SVdiff,Tdec.chooseRisky,'binomial','link','probit');
-          yfit = glmval(B,xForFit, 'probit');
-          figure(i+10); set(gcf,'name',sprintf('Subject %d',subjNumbers(i))); hold on
-          plot([0 0],[0 1],'k'); plot([xForFit(1) xForFit(end)],[.5 .5],'k');
-          plot(SVdiff,Tdec.chooseRisky,'o');
-          plot(xForFit,yfit,'color',colors(c,:),'linewidth',2); grid on; set(gca,'xlim',[xForFit(1) xForFit(end)])
-          xlabel(SVdiff_str); ylabel('P(risky)');
-          title(sprintf('Subject %d',subjNumbers(i)))
-        end
+        end % flag.findCARArhoInSearchSpace
         
         % ------ 6) Fit decisions as function of SVrisky-SVsafe with cumulative Gaussian ------
-        if flag.fitBinnedSVdiffs && ( flag.fitCARA || flag.findCARArhoInSearchSpace )
+        if flag.fitBinnedSVdiffs && ( flag.findCARArhoInSearchSpace )
           [~,binCenters,ee] = histcounts(SVdiff,binEdges);
           for iii = 1:length(binEdges)-1
             decisions(i,iii,c) = nanmean(chooseRisky(ee==iii));
@@ -616,73 +542,6 @@ for currentStudy = 1:length(datasets)
         end % flag.fitBinnedSVdiffs
         
       end % each experimental condition
-      if flag.fitCARA
-        % now collect rho and sigma, and confidence intervals, across subjects and conditions:
-        CARA_rho(i,:,c) = rhos; % dimensions: gain/mixed/loss, conditions ('Self for both','Partner for both - algorithm','Self only'), participant
-        CARA_rho_CI95_lo(i,:,c) = CI95_rho_lo; % dimensions: gain/mixed/loss, conditions ('Self for both','Partner for both - algorithm','Self only'), participant
-        CARA_rho_CI95_hi(i,:,c) = CI95_rho_hi; % dimensions: gain/mixed/loss, conditions ('Self for both','Partner for both - algorithm','Self only'), participant
-        CARA_sigma_CI95_lo(i,:,c) = CI95_sigma_lo; % dimensions: gain/mixed/loss, conditions ('Self for both','Partner for both - algorithm','Self only'), participant
-        CARA_sigma_CI95_hi(i,:,c) = CI95_sigma_hi; % dimensions: gain/mixed/loss, conditions ('Self for both','Partner for both - algorithm','Self only'), participant
-        CARA_sigma(i,:,c) = sigmas;
-      end
-      
-      % 7) Now fit the CARA model for the self only and the self-for-both conditions at the same time.
-      if flag.fitCARA_bothConds % fit rho and sigma at the same time for our 2 conditions of interest
-        NTrialTypes = [3 1]; % 2 passes: Let's do this first separately for gain, mixed and loss trials, test whether there is any difference between rhos for gain and loss, then again for all trials at the same time.
-        for p = 1:length(NTrialTypes)
-          plotFlag = 0; %p-1; % plot all-trial fits
-          %       NTrialTypes = length(trialTypes);
-          % Fit each type of trials one after the other (gain, mixed, loss):
-          for t = 1:NTrialTypes(p)
-            riskyHigh = []; riskyLow = []; Vsafe = []; chooseRisky = []; choseSafe = []; cond = [];
-            for cc = [1 3] % for our 2 conditions of interest
-              if NTrialTypes == 1 % all trials combined
-                idx         = find( Tdec_allS{i,cc}.trialType > 0 );
-              else
-                idx         = find( Tdec_allS{i,cc}.trialType == t );
-              end
-              riskyHigh   = [riskyHigh;   Tdec_allS{i,cc}.riskyHigh(idx)];
-              riskyLow    = [riskyLow;    Tdec_allS{i,cc}.riskyLow(idx)];
-              Vsafe      = [Vsafe;      Tdec_allS{i,cc}.Vsafe(idx)];
-              chooseRisky = [chooseRisky; Tdec_allS{i,cc}.chooseRisky(idx)];
-              choseSafe = [choseSafe; Tdec_allS{i,cc}.choseSafe(idx)];
-              cond        = [cond;        ones(length(idx),1) * 1-round(cc/3)]; % self-for-both = 1; self = 0;
-            end % for our 2 conditions of interest
-            lastwarn(''); disp(trialTypes{t})
-            try [rho,sigma,Delta_rho,CI95] = fitCARAmodelToRiskyChoices2conds(riskyHigh,riskyLow,Vsafe,chooseRisky,cond,plotFlag); lw = lastwarn; catch, lw = 'error'; end
-            if ~isempty(lw) % then the fit was not good, either there was a warning or an error
-              % disp([riskyHigh riskyLow Vsafe chooseRisky cond]) % check inputs into fitting
-              rho = NaN; sigma = NaN; Delta_rho = NaN; CI95 = NaN(3,2);
-            end
-            % set weird values to NaN
-            rho(abs(rho)>1) = NaN;
-            
-            if NTrialTypes(p) == 1 % data for real
-              rhos(t,1)             = rho;             sigmas(t,1)          = sigma;
-              rhos(t,3)             = rho + Delta_rho; sigmas(t,3)          = sigma;
-              CI95_rho_lo(t)        = CI95(1,1);       CI95_rho_hi(t)       = CI95(1,2);
-              CI95_sigma_lo(t)      = CI95(2,1);       CI95_sigma_hi(t)     = CI95(2,2);
-              CI95_Delta_rho_lo(t)  = CI95(3,1);       CI95_Delta_rho_hi(t) = CI95(3,2);
-            else % data for test of rho quality
-              rhosForTest(t,1)             = rho;             sigmas(t,1)          = sigma;
-              rhosForTest(t,3)             = rho + Delta_rho; sigmas(t,3)          = sigma;
-            end
-          end % trialtypes
-          if NTrialTypes(p) == 1 % then it's the data we will use to test differences between conditions
-            CARA_rho(i,:,:) = rhos; % dimensions: subject, gain/mixed/loss, conditions ('Self for both','Partner for both - algorithm','Self only'), participant
-            CARA_sigma(i,:,:) = sigmas;
-            CARA_rho_CI95_lo(i,:,:) = CI95_rho_lo; % dimensions: subject, gain/mixed/loss, conditions ('Self for both','Partner for both - algorithm','Self only'), participant
-            CARA_rho_CI95_hi(i,:,:) = CI95_rho_hi; % dimensions: subject, gain/mixed/loss, conditions ('Self for both','Partner for both - algorithm','Self only'), participant
-            CARA_sigma_CI95_lo(i,:,:) = CI95_sigma_lo; % dimensions: subject, gain/mixed/loss, conditions ('Self for both','Partner for both - algorithm','Self only'), participant
-            CARA_sigma_CI95_hi(i,:,:) = CI95_sigma_hi; % dimensions: subject, gain/mixed/loss, conditions ('Self for both','Partner for both - algorithm','Self only'), participant
-            CARA_Delta_rho_lo(i,:,:) = CI95_Delta_rho_lo; % dimensions: subject, gain/mixed/loss, conditions ('Self for both','Partner for both - algorithm','Self only'), participant
-            CARA_Delta_rho_hi(i,:,:) = CI95_Delta_rho_hi; % dimensions: subject, gain/mixed/loss, conditions ('Self for both','Partner for both - algorithm','Self only'), participant
-          else % data to simply test if there is a difference in rho between conditions
-            CARA_rho_testGainLossDiff(i,:,:) = rhosForTest; % dimensions: subject, gain/mixed/loss, conditions ('Self for both','Partner for both - algorithm','Self only'), participant
-          end % depending on how many trialtypes we test
-        end % the 2 passes
-      end % fitCARA both conds
-      %% end of block of CARA-two-conditions fit
       
       if showIndivmodelNameFitFigs; legend(conditionNames); end
       progressbar(i/Ntodo,0,'Decisions')
@@ -703,73 +562,8 @@ for currentStudy = 1:length(datasets)
   str = ttest_nice(propRiskyChoicesIfEVdiffPos-0.5);
   fprintf('Choices of option with higher EV: mean = %.1f, SD = %.1f, %s\n',mean(propRiskyChoicesIfEVdiffPos)*100,std(propRiskyChoicesIfEVdiffPos)*100,str)
   
-  %% Show risk aversion parameter rho
-  if flag.fitCARA_bothConds
-    % first, test whether there are differences in rho between gain and loss
-    % trials
-    disp('1) Checking rho')
-    disp('Paired t-test comparing rho in gain and loss trials in self only condition:')
-    temp = CARA_rho_testGainLossDiff(:,[1 3],3); % select only gain and loss trials for the self-only condition
-    idx = ~isnan(sum(temp,2));
-    ttest_nice(temp(idx,1),temp(idx,2));
-    disp('Paired t-test comparing rho in gain and loss trials in self-for-both condition:')
-    temp = CARA_rho_testGainLossDiff(:,[1 3],1); % select only gain and loss trials for the self-only condition
-    idx = ~isnan(sum(temp,2));
-    ttest_nice(temp(idx,1),temp(idx,2));
-    
-    temp = mean(CARA_rho_testGainLossDiff(:,:,:),3);
-    idx = ~isnan(sum(temp,2));
-    ttest_nice(temp(idx,1),temp(idx,2));
-    
-    figure('position',[114 202 1078 326],'name',[dataset ' Rho'])
-    disp('Anova on Rho:')
-    
-    if size(CARA_rho,2) == 1
-      qq = squeeze(CARA_rho(~isnan(CARA_rho(:,1,1)),1,[1 3]));
-      anRes = anova1_repmeas_onMatrix(qq);
-      
-      subplot(1,2,1)
-      H = dotPlot2(qq);
-      set(gca,'xticklabel',conditionNames([1 3]))
-      dotPlot2(qq);
-      set(gca,'xticklabel',conditionNames([1 3]))
-      title(sprintf('Condition (p=%.4f)',anRes{2,6}))
-      subplot(1,2,2)
-      distributionPlot(qq,'color',[.8 .8 .8]); hold on
-      plot(qq','k'); set(gca,'xticklabel',conditionNames([1 3]))
-      title('Rho')
-      ylabel('risk seeking  < -- >  risk averse')
-      %   qqq=squeeze(mean(qq,3));
-      %   dotPlot2(qqq);
-      %   set(gca,'xticklabel',{'Gain','Mixed','Loss'})
-      %   title(sprintf('Trialtype (p=%.4f)',anRes.table{2,6}))
-      
-    else % rho for separate trial types
-      qq = CARA_rho(:,:,[1 3]);
-      anRes = anova2_repmeas_autodesign(qq);
-      
-      subplot(1,3,1)
-      H = dotPlot2(qq);
-      set(gca,'xticklabel',conditionNames([1 3]))
-      legend([H(:).semPtch],{'Gain','Mixed','Loss'})
-      title(sprintf('Trialtype X condition (p=%.4f)',anRes.table{4,6}))
-      subplot(1,3,2)
-      qqq=squeeze(mean(qq,2));
-      % dotPlot2([qqq diff(qqq')']);
-      % set(gca,'xticklabel',[conditionNames([1 3]) 'Difference'])
-      dotPlot2(qqq);
-      set(gca,'xticklabel',conditionNames([1 3]))
-      title(sprintf('Condition (p=%.4f)',anRes.table{3,6}))
-      subplot(1,3,3)
-      qqq=squeeze(mean(qq,3));
-      dotPlot2(qqq,'col',trialTypeColors);
-      set(gca,'xticklabel',{'Gain','Mixed','Loss'})
-      title(sprintf('Trialtype (p=%.4f)',anRes.table{2,6}))
-    end
-  end % flag.fitCARA_bothConds
-  
   %% Check variations of CARA rho as a function of trialtype and expt. condition
-  if flag.fitCARA || flag.findCARArhoInSearchSpace
+  if flag.findCARArhoInSearchSpace
     disp('2-way ANOVA on CARA rho:')
     anova2_repmeas_autodesign(CARA_rho(:,:,[1 3]));
     disp('T-test on CARA rho obtained over all trials through search in space, comparing the 2 conditions:')
@@ -934,7 +728,7 @@ for currentStudy = 1:length(datasets)
   legend(hdle(:,1),conditionNames([3 1]),'location','NorthWest')
   
   %% If I assessed risk aversion using both CARA and the 0-crossing of the fitted probit function, I can check whether the derived measures are related:
-  if flag.checkRiskAversionConsist && flag.fitProbitFunction && ( flag.findCARArhoInSearchSpace || flag.fitCARA || flag.fitCARA_bothConds || flag.findCARArhoInSearchSpace )
+  if flag.checkRiskAversionConsist && flag.fitProbitFunction && ( flag.findCARArhoInSearchSpace || flag.findCARArhoInSearchSpace )
     % check correlation between horizontal deviation in the probit fit
     % and rho
     %   riskPremiumProbitFit(abs(riskPremiumProbitFit)>50)=NaN;
@@ -945,13 +739,8 @@ for currentStudy = 1:length(datasets)
     cc = [1 3]; % conditions to report on
     for c = 1:length(cc)
       subplot(1,2,c);
-      if flag.fitProbitFunction_sepTrialTypes
-        riskPrem_temp = makerow(riskPrem(:,cc(c)));
-        rho_temp = makerow(CARA_rho(:,:,cc(c)));
-      else
-        riskPrem_temp = riskPrem(:,cc(c));
-        rho_temp = mean(CARA_rho(:,:,cc(c)),2);
-      end
+      riskPrem_temp = riskPrem(:,cc(c));
+      rho_temp = mean(CARA_rho(:,:,cc(c)),2);
       regress_display(rho_temp,riskPrem_temp,...
         'axesHandle',gca,'inputNames',inputNames,'titlePrefix',conditionNames{cc(c)},'regressType','robust'); grid on
     end
@@ -1502,29 +1291,6 @@ for currentStudy = 1:length(datasets)
   subplot(2,2,4); qqplot(lm{best}.residuals); xlabel('Normal quantiles'); ylabel('Residuals'); title(tit)
 
   printEconomicsStyleRegressionTableForGLMs(lm, {}, [dataset ' - LMM happiness on outcomes and responsibility'], [mfilepath 'csv/' dataset ' - LMM happiness on outcomes and responsibility.csv']);
-
-  % ------ 2) Fit Charness-Rabin inequality model ------
-  % need table with Z-scored happiness,     xs = R.amountThisTrialSubject; % reward obtained by subject
-  % xp = R.amountThisTrialPartner; % reward obtained by partner
-
-  if flag.fitCharnessRabin
-    [CharRab_disAdvIneq, CharRab_advInequ, CharRab_r2] = CharnessRabinModel(Thap); % somehow gives almost identical advInequ values for all subjects...?
-    figure('name',[dataset ' CharnessRabinModelParameters']);
-    subplot(2,1,1)
-    hist(CharRab_disAdvIneq); title('Disadvantageous inequality parameter'); xlabel('\alpha'); ylabel('N participants')
-    subplot(2,1,2)
-    hist(CharRab_advInequ); title('Advantageous inequality parameter'); xlabel('\beta'); ylabel('N participants')
-    cd([mfilepath 'Figures/'])
-    printSVG
-    printfig
-    cd(mfilepath)
-  end
-  
-
-  
-  % % A model to test interaction between inequality and responsibility:
-  % modelIneqRespo = 'happiness ~ 1 + ineq + subjDecided + ineq:subjDecided + (1|subject)';        modelName{7} = 'InequalityResponsibility';
-  % lmTest = fitglme(Thap,modelIneqRespo);
   
   %% ------------------------------------------------------------------------
   %
