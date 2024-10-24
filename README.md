@@ -1,7 +1,7 @@
 # README file for Responsibility study
 
 ## Contents
-This repository contains Matlab code (.m) and data files (.mat, .csv, .nii) required to reproduce the results of the study entitled "A neural mechanism of social responsibility", by Maria Gaedeke, Tom Willems, Omar Salah Ahmed, Bernd Weber, Rene Hurlemann, and Johannes Schultz. A preprint of this study can be found on bioRxiv (Link: __XXX__).
+This repository contains Matlab code (.m) and data files (.mat, .csv, .nii) required to reproduce the results of the study entitled "A neural mechanism of social responsibility", by Maria Gaedeke, Tom Willems, Omar Salah Ahmed, Bernd Weber, Rene Hurlemann, and Johannes Schultz. A preprint of this study can be found on bioRxiv (Link: __https://doi.org/10.1101/2020.05.25.107300__). The fMRI data of the study are available on OpenNeuro (Link: __https://openneuro.org/datasets/ds005588__).
 
 ### Structure of this repository
 __BehaviouralData__ contains the raw behavioural data (.mat format) from the two studies reported in the manuscript.
