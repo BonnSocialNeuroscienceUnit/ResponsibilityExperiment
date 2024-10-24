@@ -17,7 +17,7 @@ Then run:
 - master\_fMRI\_showResults to generate Figures 4 and 5, and Supplementary Figure 2
 
 ## How to replicate the fMRI analysis
-To replicate the fMRI results using SPM12 in Matlab based on the raw data, download the raw data from OpenNeuro (Link: __XXX__). Then, use the following scripts located in Code/fMRI:
+To replicate the fMRI results using SPM12 in Matlab based on the raw data, download the raw data from OpenNeuro (Link: __https://openneuro.org/datasets/ds005588__). Then, use the following scripts located in Code/fMRI:
 
 - a\_preprocessing.m for realignment / motion correct, normalization/unwarping, and smoothing
 - b\_FFX.m to fit individual general linear models to the BOLD data
