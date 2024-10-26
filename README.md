@@ -5,7 +5,7 @@ This repository contains Matlab code (.m) and data files (.mat, .csv, .nii) requ
 
 ### Structure of this repository
 __BehaviouralData__ contains the raw behavioural data (.mat format) from the two studies reported in the manuscript.
-__Code__ contains Matlab code to generate the figures and reproduce the analyses (see below for details). Within Code, the folders Figures and csv contain outputs from the analyses, fMRI contains fMRI-specific Matlab scripts, and bin contains helper functions.
+__Code__ contains Matlab code to run the experiment, reproduce the analyses and generate the figures (see below for details). Within Code, the folders Figures and csv contain outputs from the analyses, fMRI contains fMRI-specific Matlab scripts, and bin contains helper functions.
 __fMRIresults__ contains Nifti files resulting from the analysis of the fMRI data and used in the Figures.
 
 ## How to replicate the behavioural analyses and figures
