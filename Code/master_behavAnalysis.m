@@ -141,6 +141,8 @@ flag.checkRiskAversionConsist  = 1;  % Only works if fitProbitFunctionFlag and f
 
 binEdges = -50:20:50;
 
+choiceLMMs = {}; % we will collect choice probit linear mixed models in here
+
 trialTypeColors = niceColors70s(3);
 
 % Exponential utility function for the CARA model
@@ -292,7 +294,7 @@ for currentStudy = 1:length(datasets)
   
   %% ------------------------------------------------------------------------
   %
-  %                       GOT DATA, NOW ANALYSE HAPPINESS
+  %     GOT DATA, NOW COLLECT AND DISPLAY HAPPINESS DATA - ANALYSIS l.1165+
   %
   % -------------------------------------------------------------------------
   
@@ -375,7 +377,6 @@ for currentStudy = 1:length(datasets)
       else
         bar(squeeze(happiness)'); drawnow
       end
-      %   if ~sequentialFiguresForTalk; xlabel_oblique(conditionNames([3 1 2])); end
       if ~sequentialFiguresForTalk; legend([ll1 ll2(2:3)],[hap_typeNames_soc hap_typeNames_nonsoc],'location','eastoutside'); end
       ylabel('Happiness (z-scored)')
       set(gca,'position',[0.1300    0.2167    0.6998    0.7083],'ylim',[-1 1],'xlim',[.5 3.5],'xtick',1:3,'xticklabel',conditionNames([3 1 2]))
@@ -412,22 +413,17 @@ for currentStudy = 1:length(datasets)
     ylabel('\Delta Happiness [std]')
     xlabel('Outcome participant (top) and partner (bottom)')
     title('Happiness after lottery choices')
+    % as soon as partner loses, participants feel better if partner took the decision
   end
 
   % Test happiness ratings: social conditions
   happi=[];
   happi(:,1,1:2,:)=happiness_soc(:,1:2,:); % participant won
   happi(:,2,1:2,:)=happiness_soc(:,3:4,:); % participant lost
-  anovan_autoDesign(happi,'varnames',{'subj','outcome self','outcome partner','decider'},'random',1)
-  fprintf('social vs partner, win-win: '); ttest_nice(happiness(:,1,2),happiness(:,1,3)); % Compare self social with other social: win-win: no diff
-  fprintf('social vs partner, win-lose: '); ttest_nice(happiness(:,2,2),happiness(:,2,3)); % Compare self social with other social: win-lose: diff!  p<0.05
-  fprintf('social vs partner, lose-win: '); ttest_nice(happiness(:,3,2),happiness(:,3,3)); % Compare self social with other social: lose-win: nodiff
-  fprintf('social vs partner, lose-lose: '); ttest_nice(happiness(:,4,2),happiness(:,4,3)); % Compare self social with other social: lose-lose: diff!  p<0.05
-  % as soon as partner loses, participants feel better if partner took the decision
   
   %% ------------------------------------------------------------------------
   %
-  %                       ANALYSED HAPPINESS, NOW DECISIONS
+  %             NOW COLLECT, DISPLAY AND ANALYSE DECISIONS
   %
   % -------------------------------------------------------------------------
   %% Analyse decisions, but only for conditions 1 & 3, as an algorithm took decisions in condition 2
@@ -623,31 +619,15 @@ for currentStudy = 1:length(datasets)
   p = glme.NumPredictors;
   
   dfe = nobs-p;
-  dft = nobs-1;
   
   sse = glme.SSE;    % sum of squared errors
   ssr = glme.SSR;  % regression sum of squares
-  sst = glme.SST;     % total sum of squares;
-  
-  mse = sse./dfe;
-  
-  R2 = 1 - sse ./ sst;
-  R2adj = 1 - (sse./sst)*(dft./dfe); % Adjusted R-square, == glme.Rsquared.Adjusted
   
   F = (ssr/(p-1))/(sse/dfe);
   pval = 1 - fcdf(F,p-1,nobs-p);   % Significance probability for regression
-  glme
   
-  fprintf('GLME F statistic: F(%d,%d) = %.1f, p value = %.4f, adj. R2 = %.2f\n',p-1,nobs-p,F,pval,glme.Rsquared.Adjusted)
-  
-%   % show residuals of best-fitting model
-%   figure('name','Residuals of GLME on choices');
-%   [H,p,jbstat] = jbtest(glme.residuals);
-%   if H; str = 'Residuals not normally distributed'; else; str = 'Residuals normally distributed'; end
-%   tit = sprintf('Jarque-Bera stat = %.1f, p = %.3f',jbstat,p);
-%   qqplot(glme.residuals); xlabel('Normal quantiles'); ylabel('Residuals'); title(tit)
-
-  
+  choiceLMMsStats{currentStudy,1} = sprintf('GLME F statistic: F(%d,%d) = %.1f, p value = %.4f, adj. R2 = %.2f', p-1, nobs-p, F, pval, glme.Rsquared.Adjusted);
+    
   % 4) Fit a linear probability model, so that the coefficients can be better
   % interpreted
   lm = fitglme(Tdec,...
@@ -657,24 +637,19 @@ for currentStudy = 1:length(datasets)
   p = lm.NumPredictors;
   
   dfe = nobs-p;
-  dft = nobs-1;
-  
+ 
   sse = lm.SSE;    % sum of squared errors
   ssr = lm.SSR;  % regression sum of squares
-  sst = lm.SST;     % total sum of squares;
-  
-  mse = sse./dfe;
-  
-  R2 = 1 - sse ./ sst;
-  R2adj = 1 - (sse./sst)*(dft./dfe); % Adjusted R-square, == glme.Rsquared.Adjusted
   
   F = (ssr/(p-1))/(sse/dfe);
   pval = 1 - fcdf(F,p-1,nobs-p);   % Significance probability for regression
-  lm
-  lm.Rsquared
   
-  fprintf('LM F statistic: R2=%.3f, R2adj=%.3f, F(%d,%d)=%.2f; p value: %.4f\n',R2,R2adj,p-1,nobs-p,F,pval)
+  choiceLMMsStats{currentStudy,2} = sprintf('LM F statistic: F(%d,%d)=%.2f; p value: %.4f; R2=%.3f, R2adj=%.3f',p-1, nobs-p, F, pval, lm.Rsquared.Ordinary, lm.Rsquared.Adjusted)
   
+  % collect glme and lm for econ-style table
+  choiceLMMs{currentStudy,1} = glme;
+  choiceLMMs{currentStudy,2} = lm;
+
   %% 5) Make a figure with fitted data for the probit model
   %
   %   MUPRED = PREDICT(GLME) computes a vector MUPRED of predictions of the
@@ -728,7 +703,7 @@ for currentStudy = 1:length(datasets)
   legend(hdle(:,1),conditionNames([3 1]),'location','NorthWest')
   
   %% If I assessed risk aversion using both CARA and the 0-crossing of the fitted probit function, I can check whether the derived measures are related:
-  if flag.checkRiskAversionConsist && flag.fitProbitFunction && ( flag.findCARArhoInSearchSpace || flag.findCARArhoInSearchSpace )
+  if flag.checkRiskAversionConsist && flag.fitProbitFunction && flag.findCARArhoInSearchSpace
     % check correlation between horizontal deviation in the probit fit
     % and rho
     %   riskPremiumProbitFit(abs(riskPremiumProbitFit)>50)=NaN;
@@ -774,18 +749,13 @@ for currentStudy = 1:length(datasets)
     ylabel([EVdiff_str{1} ' [Euro]'])
     
     ttest_nice(riskPrem_temp(:,1),riskPrem_temp(:,3),'paired',1);
-    %   [~,OddsAgainst] = BF2(riskPrem_temp(:,1),riskPrem_temp(:,3),[-inf inf]);
-    %   fprintf('Risk premium: Bayes Factor (BF10, i.e. odds against alternative hypothesis: %.3f\n',OddsAgainst)
+
     % Print estimated risk aversion parameter rho values to paper figure
     if paperFigure, figure(paperFig1), axes('position',rhoPanelPos+studyOffset), else, 
       subplot(1,2,1); 
     end
-    %   hh = distributionPlot(rho(:,[3 1]),'color',[.8 .8 .8],'showMM',4); hold on
-    %   hh{2}(1).LineWidth=2; hh{2}(2).LineWidth=2; hh{2}(1).Marker='.';
     violin(1,rho(:,3),'facecolor',facecolor,'withmdn',withmdn,'style',style,'scaling',1); hold on
     violin(2,rho(:,1),'facecolor',facecolor,'withmdn',withmdn,'style',style,'scaling',1); hold on
-    %   hh{2}(1).Marker='o'; hh{2}(1).MarkerFaceColor=[1 0 0];
-    %   hh{2}(2).Marker='^'; hh{2}(2).MarkerFaceColor=[0 1 0];
     plot(rho(:,[3 1])','k'); set(gca,'xtick',[1 2],'xticklabel',conditionNames([3 1]),'xlim',[.5 2.5])
     m = mean(rho(:,[3 1]));
     CI = ci_t(rho(:,[3 1]),95); % find 95% confidence intervals for the mean, assuming normally-distributed data
@@ -797,8 +767,6 @@ for currentStudy = 1:length(datasets)
     ylabel('risk seeking \leftrightarrow risk averse')
     
     ttest_nice(rho(:,1),rho(:,3),'paired',1);
-    %   [~,OddsAgainst] = BF2(rho(:,1),rho(:,3),[-inf inf]);
-    %   fprintf('Rho: Bayes Factor (BF10, i.e. odds against alternative hypothesis: %.3f\n',OddsAgainst)
     
   end
   
@@ -1194,7 +1162,11 @@ for currentStudy = 1:length(datasets)
     end
   end % parameter recovery
 
-  %% Simple linear mixed model regression analysis of happiness approach
+  %% ------------------------------------------------------------------------
+  %
+  %        NOW LINEAR MIXED MODEL ANALYSIS OF HAPPINESS DATA
+  %
+  % -------------------------------------------------------------------------
   data = [];
   for i = 1:length(R) % for each subject
     for j = 1:length(R{i}) % for each trial
@@ -1290,6 +1262,10 @@ for currentStudy = 1:length(datasets)
   subplot(2,2,3); plot(Thap.happiness,lm{best}.residuals,'.'); axis tight; xlabel('Happiness'); ylabel('Residuals'); title(str)
   subplot(2,2,4); qqplot(lm{best}.residuals); xlabel('Normal quantiles'); ylabel('Residuals'); title(tit)
 
+  % show effect of interaction partner outcome X decision-maker on happiness
+  q = lm{end}.Coefficients(7,:);
+  fprintf('Study %d, happiness, linear model t statistic for %s: t(%d) = %.2f, p value = %f, beta = %.3f, 95%% CI = [%.3f %.3f]\n', currentStudy, q{1,1}, q{1,5}, q{1,4}, q{1,6}, q{1,2}, q{1,7}, q{1,8})
+
   printEconomicsStyleRegressionTableForGLMs(lm, {}, [dataset ' - LMM happiness on outcomes and responsibility'], [mfilepath 'csv/' dataset ' - LMM happiness on outcomes and responsibility.csv']);
   
   %% ------------------------------------------------------------------------
@@ -1326,6 +1302,26 @@ for currentStudy = 1:length(datasets)
   end
   
 end % which dataset
+
+%% If output for paper, report mixed-model regressions on choices and make econ-style mixed model output tables
+
+if paperFigure
+  disp('Stats for probit models of choices')
+  for st = 1:2 % Study 1 or 2
+
+    % Stats for effect of EVdiff in probit model of choices
+    q = choiceLMMs{st,1}.Coefficients(2,:); % Probit model
+    fprintf('Study %d, probit model t statistic for %s: t(%d) = %.2f, p value = %d, beta = %.3f, 95%% CI = [%.3f %.3f]\n', st, q{1,1}, q{1,5}, q{1,4}, q{1,6}, q{1,2}, q{1,7}, q{1,8})
+
+    % Stats for effect of condition (social vs solo)
+    q = choiceLMMs{st,1}.Coefficients(3,:); % Probit model for Study 1
+    fprintf('Study %d, probit model t statistic for %s: t(%d) = %.2f, p value = %d, beta = %.3f, 95%% CI = [%.3f %.3f]\n', st, q{1,1}, q{1,5}, q{1,4}, q{1,6}, q{1,2}, q{1,7}, q{1,8})
+  end
+
+  % Print all model stats to file
+  modelNames = {'Study 1 probit','Study 1 linear','Study 2 probit','Study 2 linear'};
+  printEconomicsStyleRegressionTableForGLMs(choiceLMMs([1 3 2 4]), modelNames, 'Choices', [mfilepath 'csv/LMMs choices.csv']);
+end
 
 %% If paperFigure, add letters and print as SVG
 panLetterFontSize = 30; % 40 previously
