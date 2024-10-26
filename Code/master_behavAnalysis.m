@@ -1262,7 +1262,7 @@ for currentStudy = 1:length(datasets)
   subplot(2,2,3); plot(Thap.happiness,lm{best}.residuals,'.'); axis tight; xlabel('Happiness'); ylabel('Residuals'); title(str)
   subplot(2,2,4); qqplot(lm{best}.residuals); xlabel('Normal quantiles'); ylabel('Residuals'); title(tit)
 
-  % show effect of interaction partner outcome X decision-maker on happiness
+  % show effect of outcome for partner X decision-maker on happiness
   q = lm{end}.Coefficients(7,:);
   fprintf('Study %d, happiness, linear model t statistic for %s: t(%d) = %.2f, p value = %f, beta = %.3f, 95%% CI = [%.3f %.3f]\n', currentStudy, q{1,1}, q{1,5}, q{1,4}, q{1,6}, q{1,2}, q{1,7}, q{1,8})
 
@@ -1270,7 +1270,7 @@ for currentStudy = 1:length(datasets)
   
   %% ------------------------------------------------------------------------
   %
-  %         END COMPUTATIONAL MODELING, NOW INTER-INDIVIDUAL DIFFERENCES
+  %                 NOW INTER-INDIVIDUAL DIFFERENCES
   %
   % -------------------------------------------------------------------------
   
