@@ -52,9 +52,43 @@ end;
 result.happypred = happypred;
 result.r2 = r2;
 result.r2adj = r2adj;
-result.bic = length(happypred)*log(lse/length(happypred)) + length(b)*log(length(happypred));
-result.aic = length(happypred)*log(lse/length(happypred)) + 2*length(b);
-result.paramNames = {'CR','EV','sRPE','gamma','self_pRPE'};
+
+% calculate bic, aic and log likelihood
+k = length(b); % 𝑘: The number of estimated parameters in the model.
+n = length(happypred); % n: The number of data points or observations used in the model.
+mse = lse/n; % mse: mean squared error
+
+result.bic = n*log(mse) + k*log(n);
+result.aic = n*log(mse) + 2*k;
+
+% Now I want the log-likelihood of the model fit, so I can run a
+% likelihood ratio test: LRT = -2 * ln(L0/L1) = -2 * (logL0 - logL1). The LRT
+% value often follows a chi-square distribution. The degrees of freedom are
+% the difference in the number of parameters between the two models.
+
+%
+% In the apparently standard formulae:
+% bic = -2*log(L) + k*log(n);
+% aic = -2*log(L) + 2*k;
+%
+% L is the maximized value of the likelihood function for the model. This
+%  measures how well the model fits the data. In our case, we run a model
+%  that assumes a normal (Gaussian) distribution with constant variance for
+%  the errors. Under these assumtions, the negative log-likelihood function
+%  is proportional to the mean squared error (MSE).
+%
+% Comparing the formulae for AIC and BIC, it follows that:
+%  -2*log(L) = n*log(mse)
+% Thus we should have
+%  log(L) = n*log(mse) / -2
+%
+% The check worked: I got the same bic and aic using the two versions of
+% these formulae.
+%  check_bic = -2*logL + k*log(n);
+%  check_aic = -2*logL + 2*k;
+result.logL = n*log(mse) / -2;
+
+result.paramNames = {'CR','EV','sRPE','gamma','social_pRPE'};
 if exist('constant','var') && ~isnan(constant)
   result.paramNames = [result.paramNames, {'constant'}];
 end
