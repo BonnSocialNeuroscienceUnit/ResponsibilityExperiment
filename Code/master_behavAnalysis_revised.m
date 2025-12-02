@@ -1159,7 +1159,7 @@ for currentStudy = 1:length(datasets)
     % Next, for each subject of each study, simulate data based on real
     % parameters, fit those data, and check what parameters come out. Vary the
     % noise (units: SD of happiness). Display results.
-    noiseLevel = 1; Nrep = 100; displayFlag = 0;
+    noiseLevel = 1; Nrep = 10; displayFlag = 0;
     if ~(length(mtxs) == size(params,1)); error('Data and parameter matrices have different sizes - check which study we''re processing here'); end
     progress_report(0,'Parameter recovery')
     recov_params_all = [];
@@ -1170,7 +1170,7 @@ for currentStudy = 1:length(datasets)
       recov_params = parameterRecovery_happy_model_responsibility_redux(mtx,paramsThisSub,noiseLevel,Nrep,displayFlag);
       recov_params_all(:,:,sub) = recov_params; % dimensions: Nrep, paramNo, subNo.
     end % for each subject
-    save(['TDmodels/Recovered model parameters for ' dataset ' study ' num2str(Nrep) 'iter.mat'],'recov_params_all','params')
+    save(['bin/compModels/Recovered model parameters for ' dataset ' study ' num2str(Nrep) 'iter.mat'],'recov_params_all','params')
 
     % Now, display
     figure('Name',['Model parameter recovery for ' dataset ' study']);
