@@ -418,14 +418,14 @@ for currentStudy = 1:length(datasets)
     plot([5 6],[-3 -3],'k','linewidth',2)
     plot([7 8],[-3 -3],'k','linewidth',2)
     if strcmpi(dataset,'Behav') % p values are < 0.001 and = 0.002
-      t_hdle=text(5.5,-2.8,'***'); t_hdle.HorizontalAlignment='center'; t_hdle.FontSize=20
-      t_hdle=text(7.5,-2.8,'**'); t_hdle.HorizontalAlignment='center'; t_hdle.FontSize=20
+      t_hdle=text(5.5,-2.8,'***'); t_hdle.HorizontalAlignment='center'; t_hdle.FontSize=20;
+      t_hdle=text(7.5,-2.8,'**'); t_hdle.HorizontalAlignment='center'; t_hdle.FontSize=20;
     elseif strcmpi(dataset,'fMRI') % p values are = 0.01 and < 0.001
-      t_hdle=text(5.5,-2.8,'**'); t_hdle.HorizontalAlignment='center'; t_hdle.FontSize=20
-      t_hdle=text(7.5,-2.8,'***'); t_hdle.HorizontalAlignment='center'; t_hdle.FontSize=20
+      t_hdle=text(5.5,-2.8,'**'); t_hdle.HorizontalAlignment='center'; t_hdle.FontSize=20;
+      t_hdle=text(7.5,-2.8,'***'); t_hdle.HorizontalAlignment='center'; t_hdle.FontSize=20;
     end
 
-    legend([hh(1:2).mu],{'Social','Partner'})
+    legend([hh(1:2).mu],{'Social','Partner'});
     ylabel('\Delta Happiness [std]')
     xlabel('Outcome participant (top) and partner (bottom)')
     title([studyName ': Happiness after lottery choices'])
@@ -685,7 +685,7 @@ for currentStudy = 1:length(datasets)
   ylabel('{\it p} (risky)')
   set(gca,'xlim',[-50 50])
   title([studyName ': Choices'])
-  legend(hdle(:,1),conditionNames([3 1]),'location','NorthWest')
+  legend(hdle(:,1),conditionNames([3 1]),'location','NorthWest');
   
   %% If I assessed risk aversion using both CARA and the 0-crossing of the fitted probit function, I can check whether the derived measures are related:
   if flag.checkRiskAversionConsist && flag.fitProbitFunction && flag.findCARArhoInSearchSpace
@@ -935,10 +935,6 @@ for currentStudy = 1:length(datasets)
             compResults(n,3) = fit_happy_model_guiltenvy(mtx,zhappy,NaN);
             compResults(n,4) = fit_happy_model_responsibility(mtx,zhappy,NaN);
             compResults(n,5) = fit_happy_model_responsibility_redux(mtx,zhappy,NaN);
-            %           results(n,5) = fit_happy_model_inequalityActPass(mtx,zhappy,NaN);
-            %           results(n,5) = fit_happy_model_Omar_1(mtx,zhappy,NaN);
-            %           results(n,6) = fit_happy_model_Omar_Social(mtx,zhappy,NaN);
-            %           results(n,6) = fit_happy_model_nogain_guiltenvy_utl(mtx,zhappy,NaN);
           end
           if showIndivmodelNameFitFigs
             for m = 1:size(compResults,2)
@@ -947,7 +943,7 @@ for currentStudy = 1:length(datasets)
               plot(zhappy,'b');
               hold on; plot(compResults(n,m).happypred,'r')
               dataNames = {'happiness','predicted happiness'};
-              legend(dataNames)
+              legend(dataNames);
               title([R{n}(1).subjName ' ' whichTrials], 'interpreter','none')
               ylabel(sprintf('R2 = %.2f',compResults(n,m).r2));
               subplot(2,1,2)
@@ -1027,24 +1023,20 @@ for currentStudy = 1:length(datasets)
     f1 = figure('name','RL model parameters','position',[440   139   560   659]);
     for m = 1:size(compResults,2)
       for n = 1:size(compResults,1)
-        resMtx{m}(n,:) = [subjNumbers(n) compResults(n,m).r2 compResults(n,m).r2adj compResults(n,m).aic compResults(n,m).bic compResults(n,m).b]; % with aic and bic; but what do they represent?
-        %   resMtx(n,:) = [subjNumbers(n) results(n).r2 results(n).b];
+        resMtx{m}(n,:) = [subjNumbers(n) compResults(n,m).r2 compResults(n,m).r2adj compResults(n,m).aic compResults(n,m).bic compResults(n,m).b]; % with aic and bic
       end
       resMtxVarnames{m} = [{'Subject number', 'R2', 'R2adj', 'aic', 'bic'}, compResults(n,m).paramNames];
-      % resMtxVarnames = [{'Subject number', 'R2'}, results(n).paramNames];
       
       % display
       if length(alldata) > 1
         % group results
-        %       figure('name',['Parameters for compModelName ' results(1,m).compModelName]);
         figure(f1); subplot(size(compResults,2),1,m)
         showWhat = [6:size(resMtx{m},2)];
         plot([.5 length(showWhat)+.5],[0 0],'k')
-        %       try notBoxPlot(resMtx{m}(:,showWhat))
-        try violinDots(resMtx{m}(:,showWhat))
-        catch meansemplot(resMtx{m}(:,showWhat))
+        try violinDots(resMtx{m}(:,showWhat));
+        catch, meansemplot(resMtx{m}(:,showWhat));
         end
-        try; xlabel_oblique(resMtxVarnames{m}(showWhat)); end
+        try xlabel_oblique(resMtxVarnames{m}(showWhat)); end
         title(compResults(1,m).modelName)
         
         % individual variation
@@ -1054,7 +1046,6 @@ for currentStudy = 1:length(datasets)
           bar(resMtx{m}(:,2)); title('R2')
           subplot(4,1,2)
           bar(responsibilityEffect); title('Responsibility effect: Effect of self - other''s decision on happiness in other loss trials')
-          %         bar(nanmean(diff(happiness(:,2:3,1:2),[],3)')); title('Effect of own vs other''s decision on happiness in other loss trials')
           subplot(4,1,3)
           bar(resMtx{m}(:,end-1)); title(compResults(n,m).paramNames(end-1))
           subplot(4,1,4)
@@ -1064,7 +1055,6 @@ for currentStudy = 1:length(datasets)
           plot(resMtx{m}(:,2)); title('R2')
           subplot(4,1,2)
           plot(responsibilityEffect); title('Responsibility effect: Effect of self - other''s decision on happiness in other loss trials')
-          %         plot(nanmean(diff(happiness(:,2:3,1:2),[],3)')); title('Effect of own vs other''s decision on happiness in other loss trials')
           subplot(4,1,3)
           plot(resMtx{m}(:,end-1)); title(compResults(n,m).paramNames(end-1))
           subplot(4,1,4)
@@ -1136,14 +1126,15 @@ for currentStudy = 1:length(datasets)
 
     % do some stats to compare the model fits
     disp('Results of likelihood ratio test comparing the different models:')
-    % run likelihood ratio tests (LRT = -2 * ln(L0/L1) = -2 * (logL0 - logL1)), with DF = diff in N params:
-    comparisons = [[1 2];[1 3];[1 4];[1 5];[5 4]]; % the numbers of the models to be compared
+    % run likelihood ratio tests (LR = -2 * ln(L0/L1) = -2 * (logL1 - logL0)), follows Chi-squared distribution, with DF = diff in N params:
+    % See for example here: https://www.geeksforgeeks.org/r-language/likelihood-ratio-test/
+    comparisons = [[1 4];[2 4];[3 4];[5 4]]; % the numbers of the models to be compared: compare Responsibility (model 4) to all others
     for pair = 1:size(comparisons,1)
-      m0 = comparisons(pair,1); m1 = comparisons(pair,2);
+      m0 = comparisons(pair,1); m1 = comparisons(pair,2); % m0 is the simpler, m1 the more complex model
       % LR = -2 * ([compResults(:,m0).logL] - [compResults(:,m1).logL]); % for each participant separately
       LR = -2 * (sum([compResults(:,m0).logL]) - sum([compResults(:,m1).logL])); % summing over participants
       df = length(compResults(1,m1).b) - length(compResults(1,m0).b);
-      pval = chi2test(LR,df);
+      pval = chi2test(LR,df); % LRs follow a Chi-square distribution
       fprintf('Is model "%s" better than model "%s"? LikelihoodRatioTest = %.2f, p = %f\n', modelNames{m1}, modelNames{m0}, LR, pval)
     end
 
